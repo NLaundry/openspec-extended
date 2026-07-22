@@ -97,6 +97,32 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
     ],
   },
   {
+    name: 'coverage',
+    description: 'Report enforcement coverage over governed spec pairs (summary, drill-down, orphans)',
+    acceptsPositional: true,
+    positionalType: 'spec-id',
+    positionals: [{ name: 'target', type: 'spec-id', optional: true }],
+    flags: [
+      {
+        name: 'orphans',
+        description: 'Report prune candidates: stale bindings, enforcement-only pairs, broken targets',
+      },
+      {
+        name: 'evidence',
+        description: 'Report evidence files matching the glob that no binding references (repeatable; implies the orphan view)',
+        takesValue: true,
+      },
+      {
+        name: 'json',
+        description: 'Output the stable coverage JSON shape (for agents)',
+      },
+      {
+        name: 'strict',
+        description: 'Exit non-zero when any spec state is not complete/degraded or non-evidence orphans exist',
+      },
+    ],
+  },
+  {
     name: 'show',
     description: 'Show a change or spec',
     acceptsPositional: true,

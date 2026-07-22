@@ -146,6 +146,8 @@ export interface GovernedBindingView {
   strength: Binding['strength'];
   status: Binding['status'];
   targets: string[];
+  /** The binding's declared limitations note, or null when absent. */
+  limitations: string | null;
   /** Drift state from the coverage engine (`active`, `stale`, `broken`, ...). */
   state: string;
   /** True when this binding currently counts as coverage for its IDs. */
@@ -270,6 +272,7 @@ export function buildGovernedSpecView(input: {
       strength: binding.strength,
       status: binding.status,
       targets: binding.targets,
+      limitations: binding.limitations ?? null,
       state: drift?.state ?? 'active',
       complete: drift?.complete ?? false,
     };

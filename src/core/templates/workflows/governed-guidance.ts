@@ -75,8 +75,109 @@ are unique only within their pair, and stay fixed when titles or locators move.
 - A change stores its \`spec.md\` and \`enforcement.md\` deltas under the SAME
   plane-qualified locator as the target current pair, so both members move together.`;
 
-/** explore (task 6.1 / Requirement: Explore classifies durable insights). */
+/**
+ * The distilled enforcement/testing philosophy, shared verbatim by the explore
+ * (general altitude) and authoring (concrete altitude) guidance so both apply
+ * the same lens. It resists the coverage-as-target flood: evidence is allocated
+ * deliberately, high-leverage checks are preferred, and review/manual are
+ * first-class honest evidence.
+ */
+export const GOVERNED_ENFORCEMENT_PHILOSOPHY = `### Enforcement philosophy (governed)
+
+Enforcement records how each normative claim is *known to hold* - it is not a
+coverage quota. Aim for deliberate, honest evidence, not a wall of tests:
+
+- **Coverage is a mirror, not a target.** A passing check proves it *ran*, not
+  that it verifies the claim; do not maximize automated bindings for their own
+  sake. \`degraded\` (a spec covered only by review/manual) is factual, not a
+  demerit - never write a hollow test to "upgrade" it.
+- **Prefer the highest-leverage check.** ONE fitness function (lint /
+  static-analysis / conformance test) protects a structural invariant across the
+  whole codebase; ONE property/invariant test covers a whole family of cases.
+  Reach for these before example tests.
+- **Bind at the requirement level, not per scenario.** Scenarios are examples
+  that one binding's test family already covers - do NOT write one test per
+  scenario, and do NOT create one binding per scenario.
+- **Spend example tests on what bites:** the representative, edge, and risky
+  cases - not every enumerated path.
+- **Match mechanism to plane:** architectural invariants -> lint /
+  static-analysis / conformance; behavioral claims -> tests / property tests;
+  subjective or UX claims -> an honest \`review\` binding with a real procedure;
+  genuinely unverifiable-today -> a \`manual\` binding stating its \`limitations\`.
+  Use review/manual openly and first-class rather than faking automation.`;
+
+/**
+ * explore (opsx-explore-skill spec): staged behavior -> architecture ->
+ * enforcement exploration, the dual-plane classifier, coverage-informed health
+ * awareness, and the durable-insight classification table.
+ */
 export const GOVERNED_EXPLORE_GUIDANCE = `${GOVERNED_PRIMER}
+
+### Health check first (governed)
+
+Open a governed explore session by consulting the aggregated coverage view:
+run \`openspec coverage --json\` and read the per-spec states and orphan
+classes. Mention any rot or gaps in the areas the idea touches - hanging
+claims, stale bindings, **degraded** specs (covered only by review/manual
+evidence), broken targets, or orphaned enforcement - and factor that health
+into the discussion. When the idea touches a spec whose state is hanging,
+stale, or degraded, surface that state and suggest addressing it or explicitly
+deferring it in the proposal.
+
+### Staged exploration: behavior -> architecture -> enforcement (governed)
+
+Walk a new idea through three named stages. Stay a conversational thinking
+partner - the stages order the discussion, they are not a rigid script:
+
+1. **Desired behavior.** What observable outcome does the user want, and which
+   **behavioral spec pair** (\`specs/behavior/...\`) would own it?
+2. **Supporting architecture.** What structure must remain true to build it -
+   packages, responsibilities, boundaries, invariants - and which
+   **architectural spec pair** (\`specs/architecture/...\`) would own each
+   invariant? Actively ask whether building this introduces any **structural
+   trigger** (see the classifier below); a "yes" to any means an architectural
+   spec is in scope, not optional.
+3. **Enforcement approach - stay general; certainty is the proposal's job.**
+   The requirements and scenarios do not exist yet, so do NOT enumerate bindings,
+   target files, \`covers\` lists, or evidence strengths here. Instead, name the
+   FEW most important architectural invariants and behavioral outcomes the idea
+   introduces, and for each sketch the *highest-leverage* way you would know it
+   holds (a fitness function? a property test? honest review?). Flag anything that
+   looks genuinely hard to verify (likely review or manual). Use the enforcement
+   philosophy below as the lens for that approach, and reserve concrete bindings,
+   targets, and coverage decisions for the proposal - where the requirements will
+   exist to bind against.
+
+**Dual-plane classifier:** explicitly classify whether the idea changes what
+the system DOES, how the system must be STRUCTURED, or both. The idea needs an
+architectural spec pair (in addition to the behavioral one) when building it hits
+any **structural trigger** - do not treat these as mere implementation detail:
+- a new **port or adapter**, or any new seam between the core and the outside
+  world (persistence, network, filesystem, clock, external service);
+- a new **package, module, or layer**, or a shift of responsibility between
+  existing ones;
+- a new **dependency edge or boundary rule** (who may import/depend on whom), or
+  a change to an existing one;
+- a new **cross-cutting invariant** the code must uphold (purity, determinism,
+  dependency injection, isolation, error-handling policy).
+
+- If the idea changes user-observable behavior AND hits any structural trigger,
+  say plainly it needs a behavioral spec pair AND an architectural spec pair, and
+  name a candidate locator in EACH plane. Example: "add persistent history" is a
+  behavioral capability (\`behavior/history\`: save-on-write, list) AND an
+  architectural change (\`architecture/persistence-port\`: a new store port +
+  adapter, with the core-stays-pure invariant that persistence only enters
+  through the port) - author both, and bind the invariant to the check that
+  protects it.
+- If it only alters observable behavior within the existing structure - no new
+  port, package, dependency edge, or invariant - plan a behavioral spec pair only
+  and say why no architectural spec is needed.
+
+${GOVERNED_ENFORCEMENT_PHILOSOPHY}
+
+In explore this philosophy is a LENS for the approach, not a checklist to fill:
+use it to decide which claims deserve the strongest evidence and which are
+honestly review-only. The concrete bindings come later, in the proposal.
 
 ### Classifying durable insights (governed)
 
@@ -126,7 +227,15 @@ export const GOVERNED_AUTHORING_GUIDANCE = `${GOVERNED_PRIMER}
 - **Pair every governed spec with enforcement:** each SHALL/MUST requirement needs
   at least one binding in the paired \`enforcement.md\`; a binding may be
   \`planned\` while planning but must become \`active\` before verify/archive. A
-  \`covers\` list references only IDs from its own pair.`;
+  \`covers\` list references only IDs from its own pair.
+- **Author bindings by the philosophy below - now the requirements exist, apply
+  it concretely:** for each requirement choose the *highest-leverage real check*
+  and name concrete \`targets\`; bind at the requirement level; and use honest
+  \`review\`/\`manual\` bindings where no automated check is meaningful. Do NOT
+  emit one binding per scenario or a hollow test to inflate coverage. "At least
+  one binding" is a floor for honest evidence, not a quota to maximize.
+
+${GOVERNED_ENFORCEMENT_PHILOSOPHY}`;
 
 /** update (task 6.3 / Requirement: Change updates preserve pair coherence). */
 export const GOVERNED_UPDATE_GUIDANCE = `${GOVERNED_PRIMER}
@@ -236,6 +345,9 @@ your process tools.
   affected binding, label its evidence as **automated**, **review**, **manual**, or
   **unenforced**. Block archive-readiness while any affected binding is \`planned\`,
   unenforced, unresolved, stale, broken, or missing its target.
+- **Consult \`openspec coverage\` (and \`openspec coverage --json\`) as the
+  aggregated enforcement-coverage view backing this assessment** - per-spec
+  states, strength mix, and orphaned enforcement in one health signal.
 
 Legacy changes (\`specModel.kind == "legacy"\`) retain the heuristic requirement /
 scenario / design verification described above unchanged.`;
@@ -324,7 +436,10 @@ Apply implements BOTH the product/architecture change and its declared evidence:
   appropriate behavioral spec pair.
 - **Assess retired-target cleanup safely.** When reconciliation reports a retired
   test, rule, fixture, or review target, check surviving bindings and project usage
-  before removing it. Never auto-delete a shared or intentionally retained target.`;
+  before removing it. Never auto-delete a shared or intentionally retained target.
+- **Consult \`openspec coverage\` (and \`openspec coverage --json\`) for the
+  aggregated coverage health signal** while resolving bindings - the same view
+  exploration and verification consume.`;
 
 /** onboard (task 6.6 / Requirements: Guided Artifact Creation, Guided
  * Implementation, Archive with Explanation). */

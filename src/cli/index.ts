@@ -14,6 +14,7 @@ import { resolveRootForCommand, toRootOutput } from '../core/root-selection.js';
 import { registerSpecCommand } from '../commands/spec.js';
 import { ChangeCommand } from '../commands/change.js';
 import { ValidateCommand } from '../commands/validate.js';
+import { CoverageCommand, type CoverageCommandOptions } from '../commands/coverage.js';
 import { ShowCommand } from '../commands/show.js';
 import { CompletionCommand } from '../commands/completion.js';
 import { FeedbackCommand } from '../commands/feedback.js';
@@ -370,6 +371,29 @@ program
       await validateCommand.execute(itemName, options);
     } catch (error) {
       failWithError(error, { enabled: options?.json, fallbackCode: 'validate_error' });
+      process.exit(1);
+    }
+  });
+
+// Top-level coverage command (governed model only)
+program
+  .command('coverage [target]')
+  .description('Report enforcement coverage over governed spec pairs (summary, drill-down, orphans)')
+  .option('--orphans', 'Report prune candidates: stale bindings, enforcement-only pairs, broken targets')
+  .option(
+    '--evidence <glob>',
+    'Report evidence files matching the glob that no binding references (repeatable; implies the orphan view)',
+    (value: string, previous: string[]) => previous.concat([value]),
+    [] as string[]
+  )
+  .option('--json', 'Output the stable coverage JSON shape (for agents)')
+  .option('--strict', 'Exit non-zero when any spec state is not complete/degraded or non-evidence orphans exist')
+  .action(async (target?: string, options?: CoverageCommandOptions) => {
+    try {
+      const coverageCommand = new CoverageCommand();
+      await coverageCommand.execute(target, options);
+    } catch (error) {
+      failWithError(error, { enabled: options?.json, fallbackCode: 'coverage_error' });
       process.exit(1);
     }
   });
